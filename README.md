@@ -1,89 +1,57 @@
-# **🌐 Neural-Translation-Seq2Seq: English-to-German Study**
-### *Encoder-Decoder Architectures for Large-Scale Neural Machine Translation*
+# 🎨 Generative Models: VAE & Normalizing Flows Study
+### *Variational Autoencoders & Normalizing Flows for Latent Space Interpolation*
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/fvalerii/nmt-seq2seq-translation/blob/main/notebooks/nmt_english_german_seq2seq.ipynb)
-![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange.svg)
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](Your-Colab-Link-Here)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange)
+![TensorFlow Probability](https://img.shields.io/badge/TF_Probability-0.x-blue)
 ![Imperial College London](https://img.shields.io/badge/Academic_Partner-Imperial_College_London-blue)
-![BLEU Score](https://img.shields.io/badge/BLEU_Score-17.32-brightgreen)
-![Status](https://img.shields.io/badge/Status-Completed-success.svg)
+![Status](https://img.shields.io/badge/Status-Completed-success)
 
 ---
 
-## **📋 Research Overview**
-This project investigates the implementation of a Neural Machine Translation (NMT) system using a Sequence-to-Sequence (Seq2Seq) framework. Developed for the Imperial College London TensorFlow 2 Professional Certification, the study focuses on mapping latent semantic representations between English and German.
+## 📋 Research Overview
+This project investigates the intersection of **Probabilistic Graphical Models** and **Deep Generative Architectures**. Developed as the final Capstone for the Imperial College London TensorFlow 2 Certification, the study focuses on creating synthetic image datasets using Normalizing Flows and learning their underlying manifold via a Variational Autoencoder (VAE).
 
-The project evolved from a 20,000-sample prototype into a production-ready pipeline trained on a massive corpus, achieving significant improvements in translation fluency and structural alignment.
-
----
-
-## **🎯 Technical Architecture**
-The system utilizes a dual-recurrent framework optimized for high-dimensional semantic mapping.
-
-### **1. Feature Extraction & Encoding**
-- **Transfer Learning:** Utilizes a pre-trained **NNLM (Neural-Net Language Model)** embedding from TensorFlow Hub to project English tokens into a 128-dimensional latent space.
-- **Latent Bottleneck:** Employs a **512-unit LSTM layer** to compress the entire source sequence into a final hidden ($h$) and cell ($c$) state (the "Context Vector").
-- **Orthogonal Initialization:** Used for all LSTM units to stabilize gradient flow across long sequences and prevent vanishing gradients.
-
-### **2. Generative Decoding**
-- **Vocabulary Capping:** The German vocabulary was strategically capped at 15,000 tokens to prioritize high-frequency linguistic structures and optimize GPU VRAM usage.
-- **Teacher Forcing:** Utilized during training to accelerate convergence by feeding ground-truth tokens back into the recurrent engine.
-
-### **3. Model Architecture Diagram**
-
-```mermaid
-graph LR
-    subgraph Encoder
-    A[English Input] --> B(Embedding)
-    B --> C[LSTM Layer]
-    end
-
-    C -->|Hidden + Cell States| D{Context Vector}
-
-    subgraph Decoder
-    D --> E[LSTM Layer]
-    E --> F(Dense Softmax)
-    F --> G[German Output]
-    end
-
-    G -.->|Feedback Loop| E
-```
-*Figure: Sequence-to-Sequence framework with Latent Bottleneck and Recursive Inference.*
+The core challenge was to implement mathematically rigorous generative engines that go beyond deterministic mapping, utilizing **Evidence Lower Bound (ELBO)** optimization.
 
 ---
 
-## **🚀 Large-Scale Engineering (200,000 Dataset)**
-To transition from a 20,000 to a 200,000+ sample corpus, the following optimizations were critical:
+## 🎯 Technical Methodology
+The system employs a two-stage probabilistic framework: high-dimensional data synthesis via Normalizing Flows and manifold learning via a Variational Autoencoder.
 
-- **Streaming Pipeline:** Implemented a `tf.data.Dataset` architecture with Asynchronous Prefetching (`tf.data.AUTOTUNE`) to ensure zero GPU starvation.
+### **1. Normalizing Flow (Synthetic Data Generation)**
+The project begins by creating a custom synthetic dataset, moving beyond static data to model dynamic distributions.
+- **Base Distribution:** Utilized a **Multivariate Normal distribution** as the stochastic source.
+- **Bijector Chain:** Architected a sophisticated sequence of invertible, differentiable transformations (Bijectors). This included `Shift` and `Scale` parameters with randomized initialization to create structural variance in the synthetic images.
+- **TFP Integration:** Utilized `TransformedDistribution` to generate a stochastic dataset of 36x36x3 RGB images, serving as the ground truth for the VAE training.
 
-- **Vectorized Padding:** Dynamic truncation and padding to a fixed length of 13 ensured tensor compatibility with the Functional API.
+### 2. **Variational Autoencoder (Inference & Generation)**
+The VAE serves as the core inference engine, designed to compress the synthetic images into a lower-dimensional latent representation.
+- **The Encoder (Inference):** A deep network that maps input images to the parameters (mean and covariance) of a **Multivariate Normal distribution** in a 2D latent space.
+- **Reparameterization Trick:** Employs probabilistic layers (`MultivariateNormalTriL`) to enable differentiable sampling of latent vectors $z$, allowing for end-to-end gradient descent.
+- **Generative Decoder:** A mirror architecture designed to reconstruct data samples from the latent representation $z$.
 
-- **Masked Loss:** Applied a custom Masked Sparse Categorical Cross-Entropy loss to ensure that padding tokens did not dilute the gradient signal.
+### 3. Mathematical Optimization (The ELBO Objective)
+The model was trained using a custom training loop to optimize the **Evidence Lower Bound (ELBO)**, which serves as a proxy for the data log-likelihood.
+- **KL-Divergence Regularization:** Applied a `KLDivergenceRegularizer` to the latent space. This forces the encoder to distribute the latent variables near a standard normal prior, ensuring the space is "filled" and continuous.
+- **Reconstruction Fidelity:** Minimized the negative log-likelihood of the data to ensure the decoder preserves the structural and color details of the synthetic flow-generated images.
+- **Latent Space Interpolation:** Exploited the continuous nature of the learned manifold to perform smooth transitions between distant data points, proving the model captured the semantic logic of the data.
 
 ---
 
-## **📈 Final Performance Metrics**
-Benchmark results obtained on a strictly isolated **20,000-sentence holdout set**:
-
-| Metric | Result | Interpretation |
-| :--- | :--- | :--- |
-| **BLEU Score** | **17.32** | Strong baseline performance with significant n-gram overlap. |
-| **Validation Perplexity** | **5.35** | High confidence in word prediction (branching factor < 6). |
-| **Training Samples** | 160,000 | Robust exposure to bilingual syntax patterns. |
-| **Batch Size** | 64 | Balanced gradient stability with memory efficiency. |
-
-![Loss Perplexity Curves](images/loss_perplexity_curves.png)
-*Masked Sparse Categorical Crossentropy over 10 epochs. The convergence of validation loss indicates robust generalization.*
+## 📊 Key Results
+- **Latent Space Interpolation:** Successfully demonstrated smooth semantic transitions between generated images by traversing the learned manifold.
+- **ELBO Convergence:** Achieved stable training through the simultaneous optimization of the reconstruction log-likelihood and the KL-divergence term.
 
 --- 
 
-## **📂 Project Deliverables**
-- **[Jupyter Notebook](./notebooks/nmt_english_german_seq2seq.ipynb):** 
+## 📂 Project Deliverables
+- **[Jupyter Notebook](./notebooks/probabilistic_model_vae_flow.ipynb):** 
 
 ---
 
-## **⚙️ Execution Guide**
-The notebook is configured for Automated Pipeline Integration. It automatically fetches the English-German corpus (provided by Imperial College) directly from Google Drive using the gdown utility. The dataset is based on the language dataset from **ManyThings.org/anki**, which consists of over 200,000 sentence pairs.
+## ⚙️ Execution Guide
 
 ### **Option A: Colab Execution (Cloud)**
 The easiest way to run the study is via Google Colab.
@@ -93,7 +61,7 @@ Recommended for users with NVIDIA GPUs to leverage cuDNN acceleration.
 
 #### **1. Clone the Repository**
 ```bash
-git clone https://github.com/fvalerii/nmt-seq2seq-translation.git
+git clone https://github.com/fvalerii/probabilistic-models-vae-flow.git
 ```
 ### **2. Environment Setup** 
 It is recommended to use a environment with Python 3.12.8:
@@ -107,19 +75,26 @@ conda env create -f environment.yml
 conda activate nmt_research
 ```
 ### *3. Run the Notebook**
-Open the notebook in VS Code or Jupyter: `notebooks/nmt_english_german_seq2seq.ipynb`
+Open the notebook in VS Code or Jupyter: `notebooks/probabilistic-models-vae-flow.ipynb`
 
 ---
 
-## **💻 Tech Stack**
-- **Frameworks:** TensorFlow 2.x, Keras, TensorFlow Hub
-- **Libraries:** NumPy, Matplotlib, NLTK (BLEU), scikit-learn
-- **Execution:** Optimized for NVIDIA GPU acceleration
+## 💻 Tech Stack
+- **Frameworks:** TensorFlow 2.x, TensorFlow Probability (TFP)
+- **Mathematical Concepts:** Bijectors, TransformedDistributions, KL-Divergence, ELBO Optimization.
 
 ---
 
-## **🎓 Academic Context**
-This project serves as Capstone Research Study for the "TensorFlow 2 for Deep Learning" Professional Certification by Imperial College London. It demonstrates mastery of custom training loops, model subclassing, and complex NLP data engineering.
+## 🎓 Academic Context
+This project serves as the **final Capstone Research Study** for the **"Probabilistic Deep Learning with TensorFlow 2"** Professional Certification by Imperial College London.
+
+It demonstrates mastery of high-level probabilistic programming, including:
+
+- **Architecture Design:** Constructing Normalizing Flows with complex Bijector chains and Variational Autoencoders (VAEs).
+
+- **Mathematical Optimization:** Implementing Evidence Lower Bound (ELBO) objectives and KL-divergence regularization.
+
+- **Probabilistic Frameworks:** Extensive use of **TensorFlow Probability (TFP)** to model uncertainty and perform latent space interpolation.
 
 ---
 
