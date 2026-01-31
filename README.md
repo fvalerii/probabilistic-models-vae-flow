@@ -1,8 +1,8 @@
-# 🎨 Generative Models: VAE & Normalizing Flows Study
+# 🎨 Probabilistic Models: VAE & Normalizing Flows Study
 ### *Variational Autoencoders & Normalizing Flows for Latent Space Interpolation*
 
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](Your-Colab-Link-Here)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/fvalerii/probabilistic-models-vae-flow/blob/main/notebooks/probabilistic_models_vae_flow.ipynb)
 ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange)
 ![TensorFlow Probability](https://img.shields.io/badge/TF_Probability-0.x-blue)
 ![Imperial College London](https://img.shields.io/badge/Academic_Partner-Imperial_College_London-blue)
@@ -40,42 +40,56 @@ The model was trained using a custom training loop to optimize the **Evidence Lo
 
 ---
 
-## 📊 Key Results
-- **Latent Space Interpolation:** Successfully demonstrated smooth semantic transitions between generated images by traversing the learned manifold.
-- **ELBO Convergence:** Achieved stable training through the simultaneous optimization of the reconstruction log-likelihood and the KL-divergence term.
+## 📊 Final Results
+### **1. ELBO Convergence (Training Dynamics)**
+The model was trained by maximizing the **Evidence Lower Bound (ELBO)**. The plot below illustrates the optimization process:
+- **Total Loss:** Successful minimization of the joint objective.
+- **KL Divergence:** Shows the latent space being regularized toward a standard normal prior, ensuring a continuous manifold for interpolation.
+
+![ELBO Convergence](images/elbo_convergence.png)
+*Figure 1: Training and Validation loss curves showing stable convergence of the ELBO objective over 50 epochs.*
+
+### **2. Latent Space & Reconstructed Images**
+The ultimate proof of a generative model is its ability to reconstruct data and interpolate between points in the latent space.
+- **Reconstruction Fidelity:** The decoder accurately recovers the color and structural nuances of the synthetic flow-generated images.
+- **Interpolation:** The animation/grid below shows the smooth semantic transition between distinct generated samples, confirming a well-structured latent manifold.
+
+![Latent Space Interpolation](images/latent_interpolation.png)
+*Figure 2: Traversal of the 2D latent space showing smooth transitions in the synthesized image space.*
 
 --- 
 
 ## 📂 Project Deliverables
-- **[Jupyter Notebook](./notebooks/probabilistic_model_vae_flow.ipynb):** 
+- **[Jupyter Notebook](./notebooks/probabilistic_models_vae_flow.ipynb):** 
 
 ---
 
 ## ⚙️ Execution Guide
 
 ### **Option A: Colab Execution (Cloud)**
-The easiest way to run the study is via Google Colab.
+The fastest way to view the latent space animations is via Google Colab using the badge above.
 
 ### **Option B: Local Execution (WSL2/GPU)**
-Recommended for users with NVIDIA GPUs to leverage cuDNN acceleration.
+Recommended for leveraging local GPU acceleration for the VAE training and rendering high-frame-rate interpolations.
 
 #### **1. Clone the Repository**
 ```bash
 git clone https://github.com/fvalerii/probabilistic-models-vae-flow.git
+cd probabilistic-models-vae-flow
 ```
 ### **2. Environment Setup** 
 It is recommended to use a environment with Python 3.12.8:
+##### Using Conda (Recommended):
+```bash
+conda env create -f environment.yml
+conda activate vae-research
+```
 ##### Using Pip:
 ```bash
 pip install -r requirements.txt
 ```
-##### Using Conda:
-```bash
-conda env create -f environment.yml
-conda activate nmt_research
-```
-### *3. Run the Notebook**
-Open the notebook in VS Code or Jupyter: `notebooks/probabilistic-models-vae-flow.ipynb`
+### *3. Run the Research Study**
+Open the notebook in VS Code or Jupyter: `notebooks/probabilistic_models_vae_flow.ipynb`
 
 ---
 
